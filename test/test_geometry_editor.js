@@ -8,8 +8,6 @@ const GeomPrimitiveCone = geometry_editor.GeomPrimitiveCone;
 const GeomPrimitiveObject = geometry_editor.GeomPrimitiveObject;
 
 
-
-
 const GeomOperationCut = geometry_editor.GeomOperationCut;
 
 describe("Testing GeometryEditor", function () {
@@ -204,6 +202,35 @@ describe("Testing GeometryEditor can be converted to script", function () {
         return geometryEditor;
     }
 
+    function buildDemoObjectWithCutBox() {
+        const geometryEditor = new GeometryEditor();
+        geometryEditor.addCutBox();
+        return geometryEditor;
+    }
+    function buildDemoObjectWithCutSphere() {
+        const geometryEditor = new GeometryEditor();
+        geometryEditor.addCutSphere();
+        return geometryEditor;
+    }
+    function buildDemoObjectWithCutCone() {
+        const geometryEditor = new GeometryEditor();
+        geometryEditor.addCutCone();
+        return geometryEditor;
+    }
+    function buildDemoObjectWithCutCylinder() {
+        const geometryEditor = new GeometryEditor();
+        geometryEditor.addCutCylinder();
+        return geometryEditor;
+    }
+    function buildDemoObjectWithCutTorus() {
+        const geometryEditor = new GeometryEditor();
+        geometryEditor.addCutTorus();
+        return geometryEditor;
+    }
+
+
+
+
 
     function buildDemoParameterizedObjectWithBox() {
         const geometryEditor = new GeometryEditor();
@@ -231,6 +258,53 @@ describe("Testing GeometryEditor can be converted to script", function () {
         const g1 = buildDemoObjectWithCylinder();
         const script = g1.convertToScript();
         script.should.match("var shape0 = csg.makeCylinder([0,0,0],[100,110,120],50);\ndisplay(shape0);");
+    });
+    it("should create a script for a cut box", function () {
+        const g1 = buildDemoObjectWithCutBox();
+        const script = g1.convertToScript();
+        script.should.match("var shape0 = csg.cut(" +
+            "csg.makeBox([0,0,0],[0,0,0])," +
+            "csg.makeBox([0+0,0+0,0+0],[0-0,0-0,0-0]));" +
+            "\ndisplay(shape0);");
+    });
+    it("should create a script for a cut sphere", function () {
+        const g1 = buildDemoObjectWithCutSphere();
+        const script = g1.convertToScript();
+        script.should.match("var shape0 = csg.cut(csg.makeSphere([0,0,0],0)," +
+            "csg.makeSphere([0,0,0],0-0));" +
+            "\ndisplay(shape0);");
+    });
+    it("should create a script for a cut cone", function () {
+        const g1 = buildDemoObjectWithCutCone();
+        const script = g1.convertToScript();
+        script.should.match("var shape0 = csg.cut(" +
+            "csg.makeCone([0,0,0],0,[0,0,0],0)," +
+            "csg.makeCone([0,0,0]," +
+            "0*Math.sqrt(((0) - (0))*((0)" +
+            " - (0))+((0) - (0))*((0) - (0))+((0) - (0))*((0) - (0)))/" +
+            "Math.sqrt(((0) - (0))*((0) - (0))+((0) - (0))*((0) - (0))+((0) - (0))*((0) - (0)))," +
+            "[0,0,0]," +
+            "0*Math.sqrt(((0) - (0))*((0)" +
+            " - (0))+((0) - (0))*((0) - (0))+((0) - (0))*((0) - (0)))" +
+            "/Math.sqrt(((0) - (0))*((0) - (0))+((0) - (0))*((0) - (0))+((0) - (0))*((0) - (0)))" +
+            "));" +
+            "\ndisplay(shape0);");
+    });
+    it("should create a script for a cut cylinder", function () {
+        const g1 = buildDemoObjectWithCutCylinder();
+        const script = g1.convertToScript();
+        script.should.match("var shape0 = csg.cut(" +
+            "csg.makeCylinder([0,0,0],[0,0,0],0)," +
+            "csg.makeCylinder([0,0,0],[0,0,0],0-0));" +
+            "\ndisplay(shape0);");
+    });
+    it("should create a script for a cut torus", function () {
+        const g1 = buildDemoObjectWithCutTorus();
+        const script = g1.convertToScript();
+        script.should.match("var shape0 = csg.cut(" +
+            "csg.makeTorus([0,0,0],[0,0,1],5,1)," +
+            "csg.makeTorus([0,0,0],[0,0,1],5,1-0));" +
+            "\ndisplay(shape0);");
     });
 
 
