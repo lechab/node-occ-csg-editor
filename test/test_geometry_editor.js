@@ -5,6 +5,9 @@ const GeometryEditor = geometry_editor.GeometryEditor;
 const GeomPrimitiveBox = geometry_editor.GeomPrimitiveBox;
 const GeomPrimitiveCylinder = geometry_editor.GeomPrimitiveCylinder;
 const GeomPrimitiveCone = geometry_editor.GeomPrimitiveCone;
+const GeomPrimitiveObject = geometry_editor.GeomPrimitiveObject;
+
+
 
 
 const GeomOperationCut = geometry_editor.GeomOperationCut;
@@ -44,12 +47,27 @@ describe("Testing GeometryEditor", function () {
 
 describe("Testing GeometryEditor can be converted to script", function () {
 
-    function buildDemoObjectWithBox() {
+    function buildDemoGeomPrimitiveObject() {
         const geometryEditor = new GeometryEditor();
+
         const box1 = geometryEditor.addBox();
         box1.point1.X.set(0);
         box1.point1.Y.set(0);
         box1.point1.Z.set(0);
+
+        box1.point2.X.set("100");
+        box1.point2.Y.set("110");
+        box1.point2.Z.set("120");
+
+        const obj1 = geometryEditor.addObject();
+        obj1.geometries.push(box1);
+
+        return geometryEditor;
+    }
+
+    function buildDemoObjectWithBox() {
+        const geometryEditor = new GeometryEditor();
+        const box1 = geometryEditor.addBox();
 
         box1.point2.X.set("100");
         box1.point2.Y.set("110");
@@ -207,12 +225,12 @@ describe("Testing GeometryEditor can be converted to script", function () {
     it("should create a script for a simple box", function () {
         const g1 = buildDemoObjectWithBox();
         const script = g1.convertToScript();
-        script.should.match("var shape0 = csg.makeBox([0,0,0],[100,110,120]);");
+        script.should.match("var shape0 = csg.makeBox([0,0,0],[100,110,120]);\ndisplay(shape0);");
     });
     it("should create a script for a simple cylinder", function () {
         const g1 = buildDemoObjectWithCylinder();
         const script = g1.convertToScript();
-        script.should.match("var shape0 = csg.makeCylinder([0,0,0],[100,110,120],50);");
+        script.should.match("var shape0 = csg.makeCylinder([0,0,0],[100,110,120],50);\ndisplay(shape0);");
     });
 
 
@@ -221,8 +239,11 @@ describe("Testing GeometryEditor can be converted to script", function () {
         const script = g1.convertToScript();
         script.split("\n").should.eql([
             "var shape0 = csg.makeBox([0,0,0],[100,100,100]);",
+            "display(shape0);",
             "var shape1 = csg.makeBox([10,10,10],[90,90,150]);",
-            "var shape2 = csg.cut(shape0,shape1);"
+            "display(shape1);",
+            "var shape2 = csg.cut(shape0,shape1);",
+            "display(shape2);"
         ]);
 
         const shape0 = g1.items[0];
@@ -244,8 +265,11 @@ describe("Testing GeometryEditor can be converted to script", function () {
         const script = g1.convertToScript();
         script.split("\n").should.eql([
             "var shape0 = csg.makeBox([0,0,0],[100,100,100]);",
+            "display(shape0);",
             "var shape1 = csg.makeBox([10,10,10],[90,90,150]);",
-            "var shape3 = csg.fuse(shape0,shape1);"
+            "display(shape1);",
+            "var shape3 = csg.fuse(shape0,shape1);",
+            "display(shape3);",
         ]);
 
         const shape0 = g1.items[0];
@@ -267,8 +291,11 @@ describe("Testing GeometryEditor can be converted to script", function () {
         const script = g1.convertToScript();
         script.split("\n").should.eql([
             "var shape0 = csg.makeBox([0,0,0],[100,100,100]);",
+            "display(shape0);",
             "var shape1 = csg.makeBox([10,10,10],[90,90,150]);",
-            "var shape3 = csg.common(shape0,shape1);"
+            "display(shape1);",
+            "var shape3 = csg.common(shape0,shape1);",
+            "display(shape3);",
         ]);
 
         const shape0 = g1.items[0];
@@ -282,6 +309,27 @@ describe("Testing GeometryEditor can be converted to script", function () {
         shape0.getShapeConnectors().length.should.eql(0);
         shape1.getShapeConnectors().length.should.eql(0);
         shape2.getShapeConnectors().length.should.eql(2);
+
+
+    });
+    it("should create a script for a simple object  ", function () {
+        const g1 = buildDemoGeomPrimitiveObject();
+        const script = g1.convertToScript();
+        script.split("\n").should.eql([
+            "var shape0 = csg.makeBox([0,0,0],[100,110,120]);",
+            "display(shape0);",
+            "var shape1 = csg.makeBox([0,0,0],[100,110,120]);",
+            "display(shape1);"
+        ]);
+
+        const shape0 = g1.items[0];
+        const shape1 = g1.items[1];
+
+        shape0.getDependantShapes().length.should.eql(0);
+        shape1.getDependantShapes().length.should.eql(0);
+
+        shape0.getShapeConnectors().length.should.eql(0);
+        shape1.getShapeConnectors().length.should.eql(0);
 
 
     });
@@ -303,9 +351,13 @@ describe("Testing GeometryEditor can be converted to script", function () {
 
         script.split("\n").should.eql([
             "var shape0 = csg.makeBox([0,0,0],[100,100,100]);",
+            "display(shape0);",
             "var shape1 = csg.makeBox([10,10,10],[90,90,150]);",
+            "display(shape1);",
             "var shape2 = csg.cut(shape0,shape1);",
-            "var shape3 = shape2.rotate([0,0,0],[0,0,1],Math.PI/2.0);"
+            "display(shape2);",
+            "var shape3 = shape2.rotate([0,0,0],[0,0,1],Math.PI/2.0);",
+            "display(shape3);"
         ]);
 
     });
@@ -316,9 +368,13 @@ describe("Testing GeometryEditor can be converted to script", function () {
 
         script.split("\n").should.eql([
             "var shape0 = csg.makeBox([0,0,0],[100,100,100]);",
+            "display(shape0);",
             "var shape1 = csg.makeBox([10,10,10],[90,90,150]);",
+            "display(shape1);",
             "var shape2 = csg.cut(shape0,shape1);",
-            "var shape3 = shape2.translate([10,20,30]);"
+            "display(shape2);",
+            "var shape3 = shape2.translate([10,20,30]);",
+            "display(shape3);"
         ]);
 
     });
@@ -626,17 +682,19 @@ describe("Testing GeometryEditor can be converted to script", function () {
 
         g.convertToScript().should.eql(
  `var $A = 10;
-var $B = Math.sin(30)*$A;
+var $B = 'Math.sin(30)*$A';
 var $C = 12;
-var shape0 = csg.makeBox([0,0,0],[$A,$B,$A+$B]);`
+var shape0 = csg.makeBox([0,0,0],[$A,$B,$A+$B]);
+display(shape0);`
         );
 
         g.setParameter("A",20);
         g.convertToScript().should.eql(
 `var $A = 20;
-var $B = Math.sin(30)*$A;
+var $B = 'Math.sin(30)*$A';
 var $C = 12;
-var shape0 = csg.makeBox([0,0,0],[$A,$B,$A+$B]);`
+var shape0 = csg.makeBox([0,0,0],[$A,$B,$A+$B]);
+display(shape0);`
         );
     });
 
