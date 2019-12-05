@@ -12,6 +12,8 @@
   },
   "description": "node-occ csg editor module",
   "devDependencies": {
+    "diff": ">=3.5.0",
+    "growl": ">=1.10.0",
     "mocha": "^3.5.3",
     "should": "^13.1.0"
   },
