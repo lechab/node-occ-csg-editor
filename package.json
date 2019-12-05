@@ -12,9 +12,7 @@
   },
   "description": "node-occ csg editor module",
   "devDependencies": {
-    "diff": ">=3.5.0",
-    "growl": ">=1.10.0",
-    "mocha": "^3.5.3",
+    "mocha": "^6.2.2",
     "should": "^13.1.0"
   },
   "directories": {
