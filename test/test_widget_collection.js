@@ -1,26 +1,30 @@
 const WidgetBase = require("../lib/widget_base").WidgetBase;
 const WidgetCollection = require("../lib/widget_collection").WidgetCollection;
 const WidgetConnector = require("../lib/widget_connector").WidgetConnector;
-const should =require("should");
+const ShapeConnector = require("../lib/geometry_editor").ShapeConnector;
+
+const should = require("should");
+
+const GeomPrimiviteObject = require("../lib/geometry_editor").GeomPrimitiveObject;
+const GeomPrimitiveBox = require("../lib/geometry_editor").GeomPrimitiveBox;
 
 let future_MyWidget;
-class MyWidgetConnector extends WidgetConnector
-{
+
+class MyWidgetConnector extends WidgetConnector {
     getWidgetClass() {
         return future_MyWidget;
     }
 }
 
 let future_YourWidget = null;
-class YourWidgetConnector extends WidgetConnector
-{
+
+class YourWidgetConnector extends WidgetConnector {
     getWidgetClass() {
         return future_YourWidget;
     }
 }
 
-class MyWidget extends WidgetBase
-{
+class MyWidget extends WidgetBase {
     constructor(name) {
         super(name);
         this.myLink1 = new MyWidgetConnector(this);
@@ -34,10 +38,10 @@ class MyWidget extends WidgetBase
         return clone;
     }
 }
+
 future_MyWidget = MyWidget;
 
-class YourWidget extends WidgetBase
-{
+class YourWidget extends WidgetBase {
     constructor(name) {
         super(name);
     }
@@ -47,21 +51,23 @@ class YourWidget extends WidgetBase
         return clone;
     }
 }
+
 future_YourWidget = YourWidget;
 
-class MyWidgetCollection extends  WidgetCollection
-{
+class MyWidgetCollection extends WidgetCollection {
 
     addSomeWidget(name) {
         return this._registerWidget(new MyWidget(name));
     }
-    getWidgetBaseClass(){
+
+    getWidgetBaseClass() {
         return MyWidget;
     }
 }
-describe("WidgetCollection",function(){
 
-    it("should create a collection",function() {
+describe("WidgetCollection", function () {
+
+    it("should create a collection", function () {
 
         const c = new MyWidgetCollection();
 
@@ -76,7 +82,7 @@ describe("WidgetCollection",function(){
         w2._id.should.not.equal(w3._id);
     });
 
-    it("should provide a list of possible widget to connect to",function() {
+    it("should provide a list of possible widget to connect to", function () {
 
         const c = new MyWidgetCollection();
         const w1 = c.addSomeWidget("w1");
@@ -89,7 +95,7 @@ describe("WidgetCollection",function(){
 
     });
 
-    it("should link element of a collection",function() {
+    it("should link element of a collection", function () {
 
         const c = new MyWidgetCollection();
 
@@ -113,7 +119,7 @@ describe("WidgetCollection",function(){
 
     });
 
-    it("WidgetBase#canDelete : it should prevent deletion of entity that are observed by others",function() {
+    it("WidgetBase#canDelete : it should prevent deletion of entity that are observed by others", function () {
         const c = new MyWidgetCollection();
 
         const w1 = c.addSomeWidget();
@@ -124,14 +130,12 @@ describe("WidgetCollection",function(){
         w2.canDelete().should.eql(true);
 
         w2.myLink1.set(w1);
-        w1.canDelete().should.eql(false,"w1 cannot be delete because it is referenced by w2");
+        w1.canDelete().should.eql(false, "w1 cannot be delete because it is referenced by w2");
         w2.canDelete().should.eql(true);
 
     });
 
-
-
-    it("should be able to edit one element and replace it",function() {
+    it("should be able to edit one element and replace it", function () {
 
         const c = new MyWidgetCollection();
 
@@ -145,13 +149,13 @@ describe("WidgetCollection",function(){
 
         // now change and replace last element
         const cloned_w3 = w3.clone();
-        should.not.exist(cloned_w3._id,"cloned object should not have an id");
+        should.not.exist(cloned_w3._id, "cloned object should not have an id");
 
-        c.checkReplaceItem(w3,cloned_w3).should.eql(true);
+        c.checkReplaceItem(w3, cloned_w3).should.eql(true);
 
     });
 
-    it("should be possible to delete an element from the collection",function() {
+    it("should be possible to delete an element from the collection", function () {
 
         const c = new MyWidgetCollection();
         const w1 = c.addSomeWidget();
@@ -164,12 +168,12 @@ describe("WidgetCollection",function(){
         w2.canDelete().should.eql(true);
         c.deleteItem(w2);
 
-        w2._id.should.eql("disposed","Item should now be marked as disposed");
+        w2._id.should.eql("disposed", "Item should now be marked as disposed");
 
         c.items.length.should.eql(1);
     });
 
-    it("WidgetBase#deleteWithDependant : it should reset linked on dependant entities when an item is deleted",function() {
+    it("WidgetBase#deleteWithDependant : it should reset linked on dependant entities when an item is deleted", function () {
 
         const c = new MyWidgetCollection();
         const w1 = c.addSomeWidget();
@@ -183,10 +187,10 @@ describe("WidgetCollection",function(){
 
         // in this case w2.myLink1 should now be  set to null because w1 doesn't exist in the collection anymore
         should.not.exist(w2.myLink1.get());
-        w1._id.should.eql("disposed","Item should now be marked as disposed");
+        w1._id.should.eql("disposed", "Item should now be marked as disposed");
     });
 
-    it("should be possible to extract a sub set ",function() {
+    it("should be possible to extract a sub set ", function () {
 
         // Given  a widget collection with a nest of 4 items
         //
@@ -202,13 +206,13 @@ describe("WidgetCollection",function(){
 
         const w4 = c.addSomeWidget("w4");
 
-        w1.getDependantEntities().length.should.eql(2,"w1 is referenced by w2 and w3");
+        w1.getDependantEntities().length.should.eql(2, "w1 is referenced by w2 and w3");
         w2.getDependantEntities().length.should.eql(0);
         w4.getDependantEntities().length.should.eql(0);
 
 
         // When I extract a subset on [w2,w4]
-        const subset = c.extractSubset([w2,w4]);
+        const subset = c.extractSubset([w2, w4]);
         subset.should.be.instanceof(MyWidgetCollection);
 
         // Then this subset should only contains
@@ -233,13 +237,13 @@ describe("WidgetCollection",function(){
         ww4.getDependantEntities().length.should.eql(0);
     });
 
-    it("should not interfere with external links ",function() {
+    it("should not interfere with external links ", function () {
 
         const c = new MyWidgetCollection();
 
         const extra = new YourWidget("Extra");
 
-        extra._id= 3456;
+        extra._id = 3456;
 
         const w1 = c.addSomeWidget("w1");
         const w2 = c.addSomeWidget("w2");
@@ -248,8 +252,8 @@ describe("WidgetCollection",function(){
 
         c.getPossibleAncestors(w2).length.should.eql(1);
 
-        should.throws(function() {
-            c.replaceItem(w1,extra);
+        should.throws(function () {
+            c.replaceItem(w1, extra);
         });
 
         // ------------------------------------------------
@@ -259,7 +263,44 @@ describe("WidgetCollection",function(){
         const cloned_w1 = w1.clone();
         cloned_w1.name = "new Name";
 
-        c.replaceItem(w1,cloned_w1);
+        c.replaceItem(w1, cloned_w1);
+
+    });
+
+    it("should return linked widgets for a GeomPrimitive Object (=> WidgetGeomObjectBase)", function () {
+
+        const myGeomObj = new GeomPrimiviteObject();
+
+        const box1 = new GeomPrimitiveBox()
+        const box2 = new GeomPrimitiveBox()
+
+        myGeomObj.geometries.push(box1);
+        myGeomObj.geometries.push(box2);
+
+        myGeomObj.getGeometriesWidgetConnectors().length.should.be.eql(0);
+
+        box1._widgetConnectors = [];
+        box1._widgetConnectors.push(new ShapeConnector(new GeomPrimitiveBox("linkedBox1_1")));
+        box1._widgetConnectors.push(new ShapeConnector(new GeomPrimitiveBox("linkedBox2_1")));
+
+
+        box2._widgetConnectors = [];
+        box2._widgetConnectors.push(new ShapeConnector(new GeomPrimitiveBox("linkedBox2_1")));
+        box2._widgetConnectors.push(new ShapeConnector(new GeomPrimitiveBox("linkedBox2_2")));
+
+        const widgetBaseConnectors = myGeomObj.getWidgetConnectors();
+        widgetBaseConnectors.length.should.be.eql(0);
+        const widgetConnectors = myGeomObj.getGeometriesWidgetConnectors();
+        widgetConnectors.length.should.be.eql(4);
+
+        widgetConnectors[0]._parent.should.be.instanceOf(GeomPrimitiveBox);
+        widgetConnectors[0]._parent.name.should.be.eql("linkedBox1_1");
+        widgetConnectors[1]._parent.should.be.instanceOf(GeomPrimitiveBox);
+        widgetConnectors[1]._parent.name.should.be.eql("linkedBox2_1");
+        widgetConnectors[2]._parent.should.be.instanceOf(GeomPrimitiveBox);
+        widgetConnectors[2]._parent.name.should.be.eql("linkedBox2_1");
+        widgetConnectors[3]._parent.should.be.instanceOf(GeomPrimitiveBox);
+        widgetConnectors[3]._parent.name.should.be.eql("linkedBox2_2");
 
     });
 
